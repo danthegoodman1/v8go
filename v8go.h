@@ -136,7 +136,7 @@ typedef struct {
 } ValueBigInt;
 
 extern void Init();
-extern IsolatePtr NewIsolate();
+extern IsolatePtr NewIsolate(uint64_t maxMemMB);
 extern void IsolatePerformMicrotaskCheckpoint(IsolatePtr ptr);
 extern void IsolateDispose(IsolatePtr ptr);
 extern void IsolateTerminateExecution(IsolatePtr ptr);

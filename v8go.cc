@@ -152,15 +152,52 @@ void Init() {
   return;
 }
 
-IsolatePtr NewIsolate() {
+// Added oom error
+void OOMErrorCallbacke(const char* location, bool is_heap_oom) {
+  std::cout << "i am out of mmeory" << std::endl;
+	fprintf(stderr, "%s\nis_heap_oom = %d\n\n\n", location, static_cast<int>(is_heap_oom));
+	HeapStatistics heap;
+	Isolate::GetCurrent()->GetHeapStatistics(&heap);
+	fprintf(stderr,
+		"<--- Heap statistics --->\n"
+		"total_heap_size = %zd\n"
+		"total_heap_size_executable = %zd\n"
+		"total_physical_size = %zd\n"
+		"total_available_size = %zd\n"
+		"used_heap_size = %zd\n"
+		"heap_size_limit = %zd\n"
+		"malloced_memory = %zd\n"
+		"peak_malloced_memory = %zd\n"
+		"does_zap_garbage = %zd\n",
+		heap.total_heap_size(),
+		heap.total_heap_size_executable(),
+		heap.total_physical_size(),
+		heap.total_available_size(),
+		heap.used_heap_size(),
+		heap.heap_size_limit(),
+		heap.malloced_memory(),
+		heap.peak_malloced_memory(),
+		heap.does_zap_garbage()
+	);
+	abort();
+}
+
+IsolatePtr NewIsolate(uint64_t maxMemMB) {
   Isolate::CreateParams params;
   params.array_buffer_allocator = default_allocator;
+  // Added max memory
+  std::cout << "i am running" << std::endl;
+  params.constraints.set_max_old_generation_size_in_bytes(10*1000*1000);
+  params.constraints.set_max_young_generation_size_in_bytes(10*1000*1000);
+  std::cout << params.constraints.max_old_generation_size_in_bytes() << std::endl;
+  std::cout << params.constraints.max_young_generation_size_in_bytes() << std::endl;
   Isolate* iso = Isolate::New(params);
   Locker locker(iso);
   Isolate::Scope isolate_scope(iso);
   HandleScope handle_scope(iso);
 
   iso->SetCaptureStackTraceForUncaughtExceptions(true);
+  iso->SetOOMErrorHandler(OOMErrorCallbacke);
 
   // Create a Context for internal use
   m_ctx* ctx = new m_ctx;

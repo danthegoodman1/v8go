@@ -56,7 +56,7 @@ func NewIsolate() *Isolate {
 		C.Init()
 	})
 	iso := &Isolate{
-		ptr: C.NewIsolate(),
+		ptr: C.NewIsolate(C.uint64_t(100000)),
 		cbs: make(map[int]FunctionCallback),
 	}
 	iso.null = newValueNull(iso)
